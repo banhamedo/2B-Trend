@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم الرسائل | 2B Trend</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+  <style>
+    body { background: #f7f7fa; font-family: 'Cairo', sans-serif; }
+    .dashboard-container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(61,41,86,0.08); padding: 2rem; }
+    h2 { color: #3d2956; }
+    table { font-size: 1rem; }
+    .export-btn { background: linear-gradient(90deg, #bfa046 0%, #4b2e83 100%); color: #fff; border: none; border-radius: 8px; font-weight: bold; padding: 0.6rem 2rem; margin-bottom: 1.5rem; }
+    .export-btn:hover { background: linear-gradient(90deg, #4b2e83 0%, #bfa046 100%); }
+    .table-responsive { max-height: 60vh; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h2 class="mb-4 text-center"><i class="fas fa-table me-2"></i>لوحة تحكم رسائل التواصل</h2>
+    <button class="export-btn mb-3" id="exportBtn"><i class="fas fa-file-csv me-2"></i>تصدير إلى CSV</button>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped text-center align-middle" id="messagesTable">
+        <thead class="table-dark">
+          <tr>
+            <th>الاسم</th>
+            <th>البريد الإلكتروني</th>
+            <th>رقم الهاتف</th>
+            <th>الرسالة</th>
+            <th>التاريخ</th>
+          </tr>
+        </thead>
+        <tbody id="messagesBody">
+          <tr><td colspan="5">جاري التحميل...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    // Firebase config (نفس إعدادات الموقع)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHSZQpsIu_KeE0EqVPhSEj8GzDh42-dPc",
+      authDomain: "b-pr-6c81e.firebaseapp.com",
+      projectId: "b-pr-6c81e",
+      storageBucket: "b-pr-6c81e.firebasestorage.app",
+      messagingSenderId: "343970150309",
+      appId: "1:343970150309:web:47a4e08f9cb5b15e631a4c",
+      measurementId: "G-ZH08VF66ME"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // جلب الرسائل
+    function fetchMessages() {
+      const tbody = document.getElementById('messagesBody');
+      db.ref('contacts').once('value', (snapshot) => {
+        const data = snapshot.val();
+        tbody.innerHTML = '';
+        if (!data) {
+          tbody.innerHTML = '<tr><td colspan="5">لا توجد رسائل بعد.</td></tr>';
+          return;
+        }
+        // ترتيب حسب الأحدث
+        const rows = Object.values(data).sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+        rows.forEach(msg => {
+          tbody.innerHTML += `<tr>
+            <td>${msg.name || ''}</td>
+            <td>${msg.email || ''}</td>
+            <td>${msg.phone || ''}</td>
+            <td>${msg.message || ''}</td>
+            <td>${msg.timestamp ? new Date(msg.timestamp).toLocaleString('ar-EG') : ''}</td>
+          </tr>`;
+        });
+      });
+    }
+    fetchMessages();
+
+    // تصدير إلى CSV
+    document.getElementById('exportBtn').onclick = function() {
+      db.ref('contacts').once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return alert('لا توجد بيانات للتصدير');
+        let csv = 'الاسم,البريد الإلكتروني,رقم الهاتف,الرسالة,التاريخ\n';
+        Object.values(data).forEach(msg => {
+          csv += `"${msg.name || ''}","${msg.email || ''}","${msg.phone || ''}","${msg.message || ''}","${msg.timestamp ? new Date(msg.timestamp).toLocaleString('ar-EG') : ''}"
+`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'contacts.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    };
+  </script>
+</body>
+</html> 

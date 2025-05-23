@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مرحباً بك في 2B Trend</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(120deg, #3d2956 60%, #bfa046 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cairo', sans-serif;
+    }
+    .splash-content {
+      text-align: center;
+      color: #fff;
+      animation: fadeInSplash 1.2s;
+      width: 100vw;
+      max-width: 400px;
+    }
+    .splash-logo {
+      width: 90px;
+      height: 90px;
+      border-radius: 18px;
+      margin-bottom: 1.2rem;
+      animation: splashPulse 1.5s infinite alternate;
+      box-shadow: 0 4px 32px rgba(191,160,70,0.18);
+    }
+    .splash-title {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 0.7rem;
+      letter-spacing: 1px;
+      animation: fadeInUpSplash 1.2s 0.3s both;
+    }
+    .splash-subtitle {
+      font-size: 1.1rem;
+      color: #fff8e1;
+      animation: fadeInUpSplash 1.2s 0.7s both;
+    }
+    .btn-cta {
+      background: linear-gradient(90deg, #bfa046 0%, #ffe9a0 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      padding: 0.8rem 2.5rem;
+      margin-top: 2rem;
+      box-shadow: 0 2px 8px rgba(191, 160, 70, 0.10);
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .btn-cta:hover {
+      background: linear-gradient(90deg, #4b2e83 0%, #bfa046 100%);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(191,160,70,0.18);
+    }
+    @keyframes fadeInSplash {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeInUpSplash {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes splashPulse {
+      0% { transform: scale(1) rotate(-6deg); }
+      100% { transform: scale(1.08) rotate(6deg); }
+    }
+    @media (max-width: 600px) {
+      .splash-logo { width: 60px; height: 60px; }
+      .splash-title { font-size: 1.2rem; }
+      .splash-subtitle { font-size: 0.95rem; }
+      .splash-content { max-width: 90vw; }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash-content">
+    <img src="image/logo.svg" alt="2B Trend Logo" class="splash-logo">
+    <h2 class="splash-title">مرحباً بك في <span style="color:#bfa046">2B Trend</span></h2>
+    <div class="splash-subtitle">نقود نجاحك الرقمي بخبرة وإبداع</div>
+    <button id="splash-enter" class="btn btn-cta">دخول الموقع</button>
+  </div>
+  <script>
+    // التحويل التلقائي بعد 2 ثانية
+    setTimeout(function() {
+      window.location.href = 'home.html';
+    }, 2000);
+    // التحويل عند الضغط على الزر
+    document.getElementById('splash-enter').onclick = function() {
+      window.location.href = 'home.html';
+    };
+  </script>
+  <!-- Custom JS -->
+  <script src="script.js"></script>
+  <script>
+  </script>
+</body>
+</html> 
