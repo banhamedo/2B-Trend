@@ -772,9 +772,7 @@
     </nav>
     <!-- بداية قسم الهيرو -->
     <section id="home" class="hero-section py-5 mt-5" data-aos="fade-up">
-        <video autoplay muted loop class="background-video" playsinline>
-            <source src="image/bbb.mp4" type="video/mp4">
-        </video>
+        <video autoplay muted loop class="background-video" playsinline id="heroVideo"></video>
         <div class="container position-relative">
             <div class="row align-items-center min-vh-100">
                 <div class="col-lg-6" data-aos="fade-right" data-aos-delay="200">
@@ -1391,7 +1389,7 @@
         window.addEventListener('load', () => {
             setTimeout(() => {
                 loader.classList.add('fade-out');
-            }, 1000); // تظهر لمدة ثانية بعد التحميل
+            }, 500);
         });
 
         // بعد تحميل الصفحة بالكامل
@@ -1539,6 +1537,24 @@
     modal.onclick = function(e) {
       if (e.target === modal) modal.style.display = 'none';
     }
+    </script>
+
+    <script>
+    function setHeroVideoSource() {
+        var video = document.getElementById('heroVideo');
+        var desktopSrc = "image/bbb.mp4";
+        var mobileSrc = "image/bbbbbb2.mp4";
+        var isMobile = window.innerWidth <= 768;
+        var newSrc = isMobile ? mobileSrc : desktopSrc;
+        if (!video.src || video.src.indexOf(newSrc) === -1) {
+            video.pause();
+            video.src = newSrc;
+            video.load();
+            video.play();
+        }
+    }
+    window.addEventListener('DOMContentLoaded', setHeroVideoSource);
+    window.addEventListener('resize', setHeroVideoSource);
     </script>
 
 </body>
