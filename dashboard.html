@@ -40,11 +40,21 @@
       .custom-table { font-size: 0.95rem; }
       .export-btn, .btn-danger { padding: 0.5rem 1rem; font-size: 0.98rem; }
     }
+    /* جدول الزيارات */
+    #visitsTable th, #visitsTable td { font-size: 0.98rem; }
+    #visitsTable tbody tr:hover { background: #e9f7ff !important; }
+    #visitsTable { margin-bottom: 2rem; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 12px #4b2e8322; }
   </style>
 </head>
 <body>
   <div class="dashboard-container">
     <h2 class="mb-4 text-center"><i class="fas fa-table me-2"></i>لوحة تحكم رسائل التواصل</h2>
+    <div class="visitors-box mb-4 text-center">
+      <span class="fw-bold" style="font-size:1.2rem; background:linear-gradient(90deg,#bfa04622,#4b2e8322); padding:0.7em 2em; border-radius:12px; display:inline-block; box-shadow:0 2px 8px #4b2e8322;">
+        <i class="fas fa-users me-2"></i>
+        عدد زوار الموقع: <span id="visitorsCount">...</span>
+      </span>
+    </div>
     <div class="d-flex justify-content-center align-items-center gap-3 mb-4 flex-wrap">
       <button class="export-btn" id="exportBtn"><i class="fas fa-file-csv me-2 fa-lg"></i>تصدير إلى CSV</button>
       <button class="btn btn-danger ms-2" id="deleteAllBtn"><i class="fas fa-trash me-1 fa-lg"></i>حذف الكل</button>
@@ -65,6 +75,25 @@
           <tr><td colspan="6">جاري التحميل...</td></tr>
         </tbody>
       </table>
+    </div>
+    <div class="mt-5">
+      <h4 class="mb-3 text-center"><i class="fas fa-globe me-2"></i>أحدث زيارات الموقع</h4>
+      <div class="table-responsive mb-4">
+        <table class="table table-bordered table-striped text-center align-middle custom-table" id="visitsTable">
+          <thead class="table-dark custom-thead">
+            <tr>
+              <th>الوقت</th>
+              <th>نوع الجهاز</th>
+              <th>النظام</th>
+              <th>اللغة</th>
+              <th>المتصفح</th>
+            </tr>
+          </thead>
+          <tbody id="visitsBody">
+            <tr><td colspan="5">جاري التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
@@ -109,6 +138,33 @@
       });
     }
     fetchMessages();
+
+    // جلب عدد الزوار من Firebase
+    db.ref('statistics/visitors').once('value', (snapshot) => {
+      document.getElementById('visitorsCount').textContent = snapshot.val() || 0;
+    });
+
+    // جلب أحدث 50 زيارة
+    db.ref('visits').limitToLast(50).once('value', (snapshot) => {
+      const data = snapshot.val();
+      const tbody = document.getElementById('visitsBody');
+      tbody.innerHTML = '';
+      if (!data) {
+        tbody.innerHTML = '<tr><td colspan="5">لا توجد زيارات بعد.</td></tr>';
+        return;
+      }
+      // ترتيب من الأحدث للأقدم
+      const rows = Object.values(data).sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+      rows.forEach(visit => {
+        tbody.innerHTML += `<tr>
+          <td>${visit.timestamp ? new Date(visit.timestamp).toLocaleString('ar-EG') : ''}</td>
+          <td>${visit.deviceType || ''}</td>
+          <td>${visit.platform || ''}</td>
+          <td>${visit.language || ''}</td>
+          <td>${visit.userAgent ? visit.userAgent.split(')')[0] + ')' : ''}</td>
+        </tr>`;
+      });
+    });
 
     // تصدير إلى CSV
     document.getElementById('exportBtn').onclick = function() {
