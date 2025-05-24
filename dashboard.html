@@ -5,33 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>لوحة تحكم الرسائل | 2B Trend</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+  <link rel="icon" type="image/png" href="logo.png">
   <style>
     body { background: #f7f7fa; font-family: 'Cairo', sans-serif; }
-    .dashboard-container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(61,41,86,0.08); padding: 2rem; }
+    .dashboard-container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 20px; box-shadow: 0 4px 24px rgba(61,41,86,0.10); padding: 2.5rem 2rem 2rem 2rem; }
     h2 { color: #3d2956; }
-    table { font-size: 1rem; }
-    .export-btn { background: linear-gradient(90deg, #bfa046 0%, #4b2e83 100%); color: #fff; border: none; border-radius: 8px; font-weight: bold; padding: 0.6rem 2rem; margin-bottom: 1.5rem; }
-    .export-btn:hover { background: linear-gradient(90deg, #4b2e83 0%, #bfa046 100%); }
-    .table-responsive { max-height: 60vh; overflow-y: auto; }
+    .export-btn { background: linear-gradient(90deg, #bfa046 0%, #4b2e83 100%); color: #fff; border: none; border-radius: 8px; font-weight: bold; padding: 0.6rem 2rem; margin-bottom: 0; font-size: 1.08rem; box-shadow: 0 2px 8px #bfa04622; transition: background 0.2s, box-shadow 0.2s; }
+    .export-btn:hover { background: linear-gradient(90deg, #4b2e83 0%, #bfa046 100%); box-shadow: 0 4px 16px #4b2e8322; }
+    .btn-danger { font-size: 1.08rem; font-weight: bold; border-radius: 8px; padding: 0.6rem 2rem; box-shadow: 0 2px 8px #b91c1c22; transition: background 0.2s, box-shadow 0.2s; }
+    .btn-danger:hover { background: #a80000 !important; box-shadow: 0 4px 16px #b91c1c33; }
+    .table-responsive { max-height: 60vh; overflow-y: auto; margin-bottom: 2rem; }
+    .custom-table { border-radius: 18px; overflow: hidden; box-shadow: 0 2px 16px #4b2e8322; margin-bottom: 2rem; }
+    .custom-thead th { background: linear-gradient(90deg, #bfa046 0%, #4b2e83 100%) !important; color: #fff !important; font-size: 1.08rem; border-top: none !important; }
+    .table td, .table th { vertical-align: middle !important; text-align: center; font-size: 1.04rem; }
+    .table tr { transition: background 0.18s; }
+    .table tbody tr:hover { background: #f3eaff !important; }
+    .delete-btn {
+      font-weight: bold;
+      padding: 0.3rem 1.1rem;
+      border-radius: 6px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      font-size: 1.02rem;
+    }
+    .delete-btn i { margin-left: 0.2em; font-size: 1.15em; }
+    .delete-btn:hover, .delete-btn:focus {
+      background: #b91c1c !important;
+      color: #fff !important;
+    }
+    @media (max-width: 600px) {
+      .dashboard-container { padding: 1rem 0.2rem; }
+      .custom-table { font-size: 0.95rem; }
+      .export-btn, .btn-danger { padding: 0.5rem 1rem; font-size: 0.98rem; }
+    }
   </style>
 </head>
 <body>
   <div class="dashboard-container">
     <h2 class="mb-4 text-center"><i class="fas fa-table me-2"></i>لوحة تحكم رسائل التواصل</h2>
-    <button class="export-btn mb-3" id="exportBtn"><i class="fas fa-file-csv me-2"></i>تصدير إلى CSV</button>
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped text-center align-middle" id="messagesTable">
-        <thead class="table-dark">
+    <div class="d-flex justify-content-center align-items-center gap-3 mb-4 flex-wrap">
+      <button class="export-btn" id="exportBtn"><i class="fas fa-file-csv me-2 fa-lg"></i>تصدير إلى CSV</button>
+      <button class="btn btn-danger ms-2" id="deleteAllBtn"><i class="fas fa-trash me-1 fa-lg"></i>حذف الكل</button>
+    </div>
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered table-striped text-center align-middle custom-table" id="messagesTable">
+        <thead class="table-dark custom-thead">
           <tr>
             <th>الاسم</th>
             <th>البريد الإلكتروني</th>
             <th>رقم الهاتف</th>
             <th>الرسالة</th>
             <th>التاريخ</th>
+            <th>حذف</th>
           </tr>
         </thead>
         <tbody id="messagesBody">
-          <tr><td colspan="5">جاري التحميل...</td></tr>
+          <tr><td colspan="6">جاري التحميل...</td></tr>
         </tbody>
       </table>
     </div>
@@ -60,18 +91,19 @@
         const data = snapshot.val();
         tbody.innerHTML = '';
         if (!data) {
-          tbody.innerHTML = '<tr><td colspan="5">لا توجد رسائل بعد.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6">لا توجد رسائل بعد.</td></tr>';
           return;
         }
         // ترتيب حسب الأحدث
-        const rows = Object.values(data).sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
-        rows.forEach(msg => {
+        const rows = Object.entries(data).sort((a, b) => ((b[1].timestamp || '').localeCompare(a[1].timestamp || '')));
+        rows.forEach(([key, msg]) => {
           tbody.innerHTML += `<tr>
             <td>${msg.name || ''}</td>
             <td>${msg.email || ''}</td>
             <td>${msg.phone || ''}</td>
             <td>${msg.message || ''}</td>
             <td>${msg.timestamp ? new Date(msg.timestamp).toLocaleString('ar-EG') : ''}</td>
+            <td><button class="btn btn-sm btn-danger delete-btn" data-key="${key}"><i class="fas fa-trash"></i> حذف</button></td>
           </tr>`;
         });
       });
@@ -99,6 +131,36 @@
         URL.revokeObjectURL(url);
       });
     };
+
+    // حذف الكل
+    document.getElementById('deleteAllBtn').onclick = function() {
+      if (confirm('هل أنت متأكد أنك تريد حذف جميع الرسائل؟ لا يمكن التراجع.')) {
+        db.ref('contacts').remove()
+          .then(() => {
+            document.getElementById('messagesBody').innerHTML = '<tr><td colspan="6">لا توجد رسائل بعد.</td></tr>';
+          })
+          .catch(err => {
+            alert('حدث خطأ أثناء حذف الكل: ' + err.message);
+          });
+      }
+    };
+
+    // حذف رسالة عند الضغط على زر الحذف
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('delete-btn') || (e.target.closest('.delete-btn'))) {
+        const btn = e.target.closest('.delete-btn');
+        const key = btn.getAttribute('data-key');
+        if (confirm('هل أنت متأكد أنك تريد حذف هذه الرسالة؟ لا يمكن التراجع.')) {
+          firebase.database().ref('contacts/' + key).remove()
+            .then(() => {
+              btn.closest('tr').remove();
+            })
+            .catch(err => {
+              alert('حدث خطأ أثناء الحذف: ' + err.message);
+            });
+        }
+      }
+    });
   </script>
 </body>
 </html> 
